@@ -1,0 +1,1094 @@
+<!doctype html>
+<!--[if lt IE 7 ]> <html lang="en" class="ie6"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en" class="ie7"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en" class="ie8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en" class="ie9"> <![endif]-->
+<!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->
+<head>
+<meta name="viewport" content="width = 1050, user-scalable = no" />
+<script type="text/javascript" src="extras/jquery.min.1.7.js"></script>
+<script type="text/javascript" src="extras/modernizr.2.5.3.min.js"></script>
+<script type="text/javascript" src="lib/hash.js"></script>
+<link rel='stylesheet prefetch' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css'>
+<link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Sniglet'>
+ <script  src="js/index.js"></script>
+<style>
+/*html { 
+  background: url(../images/2.jpg) no-repeat center center fixed; 
+  -webkit-background-size: contain;
+  -moz-background-size: contain;
+  -o-background-size: contain;
+  background-size: contain;
+}*/
+
+
+* {margin: 0; padding: 0;}
+body {
+	font: normal 18px Sniglet; color: white; text-align: center;
+}
+
+/*general styles*/
+h1 {font-weight: normal; font-size: 36px; margin-bottom: 75px;}
+
+.cuboid {
+	width: 250px; 
+    /*this sets where the box is on the page*/
+    margin: 20% 10px 0px 50px;
+	/*this also makes #cuboid a container for absolutely positioned descendants*/
+	perspective: 1000px;
+        z-index: 10000;
+}
+.cuboid form {
+	/*counter translate*/
+	transform: translateZ(-20px);
+	/*propogate 3d space for children*/
+	transform-style: preserve-3d;
+	/*prevent height collapse as children are absolutely positioned*/
+	height: 40px;
+	/*for smooth animations*/
+	transition: all 0.35s;
+}
+
+/*faces*/
+.cuboid-text {
+	/*each face will be 40px high*/
+	line-height: 40px; height: 40px;
+	background: #f68806;
+}
+.loader {
+	background: #0a0aa7;
+	animation: phase 1s infinite;
+}
+/*Lets create a pulsating animation for the loader face*/
+@keyframes phase {
+	50% {background: #000000;}
+}
+.email {
+	background: #ededed; outline: none; border: 2px solid #f68806;
+	font: inherit; text-align: left; color: #5c5c66;
+	display: block; width: 100%; padding: 0 10px;
+	box-sizing: border-box;
+}
+.submit {display: none;}
+
+.submit-icon, .reset-icon {
+	position: absolute; top: 0; right: 0;
+	color: rgba(0, 0, 0, 0.25);
+	line-height: 40px; padding: 0 10px;
+	/*smooth transitions when user activates input and types something*/
+	transition: all 0.5s;
+	/*to make the icons feel like buttons*/
+	cursor: pointer;
+}
+/*.active = when the user is typing something*/
+.submit-icon.active {color: hsl(120, 40%, 30%);}
+.reset-icon {color: rgba(255, 255, 255, 0.55); font-size: 14px;}
+
+.cuboid div {position: absolute; top: 0; left: 0; width: 100%;}
+/*3D transforms. Each face will be rotated in multiples of -90deg and moved 20px(half of their 40px height) out*/
+.cuboid div:nth-child(1) {transform: rotateX(0deg) translateZ(20px);}
+.cuboid div:nth-child(2) {transform: rotateX(-90deg) translateZ(20px);}
+.cuboid div:nth-child(3) {transform: rotateX(-180deg) translateZ(20px);}
+.cuboid div:nth-child(4) {transform: rotateX(-270deg) translateZ(20px);}
+
+/*the form will have 4 states/classes(default+3) for rotation*/
+.cuboid form:hover, 
+.cuboid form.ready {transform: translateZ(-20px) rotateX(90deg);}
+.cuboid form.loading {transform: translateZ(-20px) rotateX(180deg);}
+.cuboid form.complete {transform: translateZ(-20px) rotateX(270deg);}
+
+/////////////// overlay and popup designs
+
+.popup  {
+  margin: 70px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 5px;
+  width: 30%;
+  position: absolute;
+  transition: all 5s ease-in-out;
+  display: none;
+      margin-bottom: 10%;
+    margin-right: 50%;
+}
+
+.popup h2 {
+  margin-top: 0;
+  font-size: 50px;
+  color: #fff;
+  font-family: Tahoma, Arial, sans-serif;
+}
+.popup .close {
+     position: absolute;
+    top: -10px;
+    right: 5px;
+    transition: all 200ms;
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+}
+.popup .close:hover {
+  color: #06D85F;
+}
+.popup .content {
+  max-height: 30%;
+  overflow: auto;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  transition: opacity 500ms;
+  z-index: 16777260;
+  //visibility: hidden;
+ // opacity: 0;
+}
+.overlay::before{
+    content: " ";
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 16777260;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, .5);
+   -webkit-transition:3s;
+   transition:3s ;
+}
+
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('http://i.stack.imgur.com/FhHRx.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+    display: block;
+}
+
+</style>
+</head>
+<body>
+   
+<div id="canvas">
+    
+<!-- <div class="zoom-icon zoom-icon-in"></div> -->
+<div class="magazine-viewport">
+         
+	<div class="container">
+            <!-- element to show/hide -->
+<!--                <div style=" margin-top: -10%;    margin-left: -14%;   z-index: 16777271; margin-bottom: 10%;   margin-right: 50%; padding: 20px;  background: rgba(246, 136, 6, 1);  border-radius: 5px;  width: 100%;  position: absolute;  transition: all 5s ease-in-out;  display: none;" class="loader">
+                    <img width="24" height="24" alt="loader" src="pics/loader.gif">
+                </div>-->
+<div class="modal"><!-- Place at bottom of page --></div>
+            <div class="popup" id="popupfail" style="     margin-top: -10%;    margin-left: -14%;   z-index: 16777271; margin-bottom: 10%;   margin-right: 50%; padding: 20px;  background: rgba(246, 136, 6, 1);  border-radius: 5px;  width: 30%;  position: absolute;  transition: all 5s ease-in-out;  display: none;">
+		<h2>No</h2>
+		<a class="close" href="#">&times;</a>
+<!--		<div class="content">
+			Please enter correct name .
+		</div>-->
+	</div>
+            <div class="popup" id="popupsuccess" style="     margin-top: -10%;    margin-left: -14%;   z-index: 16777271; margin-bottom: 10%;   margin-right: 50%; padding: 20px;  background: rgba(246, 136, 6, 1);  border-radius: 5px;  width: 30%;  position: absolute;  transition: all 5s ease-in-out;  display: none;">
+		<h2>Yes</h2>
+		<a class="close" href="#">&times;</a>
+		<div class="content" id="gamePoint">
+			Correct Answer  .
+		</div>
+	</div>
+		<div class="magazine">
+                    
+                    
+                    
+		<div depth="5" class="hard" style="background-image:url(pages/1.jpg)">
+				<div class="side"></div>
+			</div>
+			<div  class="page" style="background-image:url(pages/2-left.jpg)"> 
+                            <div class="cuboid">
+                                 <form  onclick="setZoomOut(event)">
+                                                <!---->
+                                                <div>
+                                                        <p class="cuboid-text">Submit Your Wild Guess</p>
+                                                </div>
+                                                <!--  -->
+                                                <div>
+                                                        <!--  -->
+                                                        <label for="submit"  onclick="validateInput('txtPage1')" class="submit-icon">
+                                                                <i class="fa fa-chevron-right"></i>
+                                                        </label>
+                                                        <input onkeydown="saveOnKeyPress(event,'txtPage1')"  id="txtPage1"  type="text" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                        <!-- hidden submit button -->
+                                                        <input type="submit" class="submit" />
+                                                </div>
+                                                <!-- #3 loading message -->
+                                                <div>
+<!--                                                        <!--                                                        -->-->
+                                                </div>
+                                                <!---->
+                                                <div>
+                                                        <!-- reset/retry button -->
+                                                        <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                        <p class="cuboid-text">Try Again</p>
+                                                </div>
+                                        </form>
+                                </div>
+			</div>
+			
+                        <div class="page" style="background-image:url(pages/2-right.jpg)">
+
+
+                             
+                        </div> 
+                    <div class="page" style="background-image:url(pages/3-left.jpg)">
+                        
+                           
+                         <div class="cuboid">
+                             <form onclick="setZoomOut(event)">
+                                           
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                            
+                                            <div>
+                                                    
+                                                    <label onclick="validateInput('txtPage2')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage2')" type="text" class="cuboid-text email" id="txtPage2" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                            
+                                            <div>
+<!--                                              -->
+                                            </div>
+                                           
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/3-right.jpg)">
+                         
+                        </div>
+                    <div class="page" style="background-image:url(pages/4-left.jpg)">
+                           
+                         <div class="cuboid">
+                                    <form  onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                          
+                                            <div>
+                                                
+                                                    <label  onclick="validateInput('txtPage3')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage3')" type="text" id="txtPage3" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                    
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                         
+                                            <div>
+<!--                                                           -->
+                                            </div>
+                                            
+                                            <div>
+                                                    
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/4-right.jpg)">
+                         
+                        </div>
+                    <div class="page" style="background-image:url(pages/5-left.jpg)">
+                        
+                            <div class="cuboid" >
+                                    <form onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div>
+                                                      
+                                                    <label onclick="validateInput('txtPage4')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage4')" id="txtPage4" type="text" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                                                                            
+                                            </div>
+                                            
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/5-right.jpg)">
+                            
+                        </div>
+                    <div class="page" style="background-image:url(pages/6-left.jpg)">
+                           
+                         <div class="cuboid">
+                             <form  onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div>
+                                                      
+                                                    <label  onclick="validateInput('txtPage5')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                    <input onkeydown="saveOnKeyPress(event,'txtPage5')" id="txtPage5" type="text" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                      
+                                            </div>
+                                            
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/6-right.jpg)">
+                         
+                        </div>
+                    <div class="page" style="background-image:url(pages/7-left.jpg)">
+                        
+                            <div class="cuboid">
+                             <form onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div>
+                                                      
+                                                    <label onclick="validateInput('txtPage6')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage6')" type="text"  id="txtPage6" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                                                                            
+                                            </div>
+                                            
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/7-right.jpg)">
+                            
+                        </div>
+                    <div class="page" style="background-image:url(pages/8-left.jpg)">
+                         
+                            <div class="cuboid">
+                                    <form onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div>
+                                                      
+                                                    <label  onclick="validateInput('txtPage7')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                    <input onkeydown="saveOnKeyPress(event,'txtPage7')" type="text" id="txtPage7" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                                                                            
+                                            </div>
+                                            
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/8-right.jpg)">
+                           
+                        </div>
+                    <div class="page" style="background-image:url(pages/9-left.jpg)">
+                           
+                         <div class="cuboid">
+                             
+                             <form  onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div>
+                                                      
+                                                    <label  onclick="validateInput('txtPage8')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage8')"  id="txtPage8" type="text" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                                                                            
+                                            </div>
+                                             
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                        
+                         </div>
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/9-right.jpg)">
+                         
+                        </div>
+                    <div class="page" style="background-image:url(pages/10-left.jpg)">
+                          
+                         <div class="cuboid">
+                             <form  onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div> 
+                                                      
+                                                    <label  onclick="validateInput('txtPage9')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage9')"  type="text" id="txtPage9" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                                                                            
+                                            </div>
+                                            
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/10-right.jpg)">
+                          
+                        </div>
+                    <div class="page" style="background-image:url(pages/11-left.jpg)">
+                        
+                        
+                            <div class="cuboid"  onclick="setZoomOut(event)">
+                                    <form>
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div>
+                                                      
+                                                    <label  onclick="validateInput('txtPage10')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage10')"  type="text" id="txtPage10" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                                                                            
+                                            </div>
+                                            
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                    </div>
+                        <div class="page" style="background-image:url(pages/11-right.jpg)">
+                            
+                        </div>			
+                    <div class="page" style="background-image:url(pages/12-left.jpg)">
+                          
+                         <div class="cuboid">
+                             <form  onclick="setZoomOut(event)">
+                                            
+                                            <div>
+                                                    <p class="cuboid-text">Submit Your Wild Guess</p>
+                                            </div>
+                                              
+                                            <div>
+                                                      
+                                                    <label  onclick="validateInput('txtPage11')" for="submit" class="submit-icon">
+                                                            <i class="fa fa-chevron-right"></i>
+                                                    </label>
+                                                     <input onkeydown="saveOnKeyPress(event,'txtPage11')"  type="text" id="txtPage11" class="cuboid-text email" placeholder="What Character Is This?" autocomplete="off"/>
+                                                  
+                                                    <input type="submit" class="submit" />
+                                            </div>
+                                          
+                                            <div>
+                                                                                                            
+                                            </div>
+                                            
+                                            <div>
+                                                   
+                                                    <span class="reset-icon"><i class="fa fa-refresh"></i></span>
+                                                    <p class="cuboid-text">Try Again</p>
+                                            </div>
+                                    </form>
+                            </div>
+                        
+                    </div> 
+                        <div class="hard" style="background-image:url(pages/12-right.jpg)">
+                          
+                        </div>
+                        <div class="hard" style="background-image:url(pages/13.jpg)">
+                            
+                         
+
+                        </div>
+		</div>
+	</div>
+</div>
+</div>
+
+<script type="text/javascript">
+   var keyCode = 0;
+   function  saveOnKeyPress(event,inputField){
+         if(event.keyCode == 13) {
+            // alert("key pressed");
+              event.preventDefault();
+              validateInput(inputField);
+             return false;
+         }
+    }
+    function setZoomOut(e){
+        if (!e) var e = window.event;
+        e.cancelBubble = true;
+        if (e.stopPropagation) e.stopPropagation();
+        }
+    $("#canvas").bind("last", function(event) {
+        var lastAudio = new Audio('audio/EOL.mp3');
+        lastAudio.play();
+    });
+    
+     $('body').on('click',function(){
+         $('body').removeClass('overlay');
+      $('#popupfail').hide();
+      $('#popupsuccess').hide();
+     });
+    
+     $('#popupfail > .close').on('click',function(){
+    
+      $('body').removeClass('overlay');
+      $('#popupfail').hide();
+  });
+    
+ $('#popupsuccess > .close').on('click',function(){
+    
+      $('body').removeClass('overlay');
+      $('#popupsuccess').hide();
+  });
+
+function wrongAnswer(){
+    $('#popupfail').show();
+        $('body').addClass('overlay');
+         $(this).css({
+          'z-index':'-1'
+        });
+        var audio = new Audio('audio/wrong_answer.mp3');
+        audio.play();
+}
+function correctAnswer(gamePoint){
+    $('#gamePoint').html("Game Piece: "+gamePoint);
+            $('#popupsuccess').show();
+            $('body').addClass('overlay');
+                var correctAudio = new Audio('audio/correct_answer.mp3');
+                correctAudio.play();
+}
+//function c(inputField,actualValue,gamePoint){
+//    var fieldName = '#'+inputField;
+//    //The Awful Dynne
+//   txtinputField =  $(fieldName).val();
+//   txtinputField =  txtinputField.toLowerCase();
+//   actualValue =  actualValue.toLowerCase();
+//     //if(txtinputField.toLowerCase()!=actualValue.toLowerCase()){
+//    if(txtinputField!=actualValue){
+//       console.log(actualValue.indexOf("the "));
+//        if(actualValue.indexOf("the ") >=0 ){
+//            orignalStringInput = actualValue.substr(4, actualValue.length);
+//            console.log(orignalStringInput);
+//            if(txtinputField!=orignalStringInput){
+//                wrongAnswer();
+//            }else{
+//                correctAnswer(gamePoint)
+//            }
+//            //Awful Dynne
+//        }else{
+//             wrongAnswer();
+//        }   
+//            
+//       
+//    }else{
+//    correctAnswer(gamePoint)
+//   }
+//            
+//            $(fieldName).val("");
+//            return false;
+//}
+function validateInput(element){
+       $("body").addClass("loading"); 
+    var $this=$(this);
+     $('.loader').show();// use $this here not $(this) 
+var uri = "http://www.grandpasvcr.com/answer/answercheck.php"
+$.ajax({
+    url: uri,
+    data: { id: element, value:$("#"+element).val() },
+    async: true,
+    type: "POST",
+    success: function (data) {
+   // $('.loader').hide();
+    $("body").removeClass("loading");
+     if(data.status == 'success'){
+         correctAnswer(data.point)
+         
+     }else{
+          wrongAnswer();
+     }
+         $(element).val("");
+    },
+    error: function (xhr, textStatus, errorMessage) {
+        $("body").removeClass("loading");
+         wrongAnswer();
+        console.log(xhr);
+        console.log(textStatus);
+        console.log(errorMessage);
+    }     
+           
+});
+ $(element).val("");
+}
+$('.thumbnails').hide();
+function loadApp() {
+ 	$('#canvas').fadeIn(1000);
+
+ 	var flipbook = $('.magazine');
+
+ 	// Check if the CSS was already loaded
+	
+	if (flipbook.width()==0 || flipbook.height()==0) {
+		setTimeout(loadApp, 10);
+		return;
+	}
+	
+	$('.magazine .double').scissor();
+	// Create the flipbook
+
+	flipbook.turn({
+			
+			// Magazine width
+
+			width: 922,
+
+			// Magazine height
+
+			height: 600,
+
+			// Duration in millisecond
+
+			duration: 1000,
+
+			// Hardware acceleration
+
+			acceleration: !isChrome(),
+
+			// Enables gradients
+
+			gradients: true,
+			
+			// Auto center this flipbook
+
+			autoCenter: true,
+
+			// Elevation from the edge of the flipbook when turning a page
+
+			elevation: 50,
+
+			// The number of pages
+
+			
+	});
+
+	// Zoom.js
+
+	$('.magazine-viewport').zoom({
+		flipbook: $('.magazine'),
+
+		max: function() { 
+			
+			return largeMagazineWidth()/$('.magazine').width();
+
+		}, 
+
+		when: {
+
+			swipeLeft: function() {
+
+				$(this).zoom('flipbook').turn('next');
+
+			},
+
+			swipeRight: function() {
+				
+				$(this).zoom('flipbook').turn('previous');
+
+			},
+
+			resize: function(event, scale, page, pageElement) {
+
+				/* if (scale==1)
+					loadSmallPage(page, pageElement);
+				else
+					loadLargePage(page, pageElement); */
+
+			},
+
+			zoomIn: function () {
+
+				$('.thumbnails').hide();
+				$('.cuboid').hide();
+				$('.made').hide();
+				$('.magazine').removeClass('animated').addClass('zoom-in');
+				$('.zoom-icon').removeClass('zoom-icon-in').addClass('zoom-icon-out');
+				
+				/* if (!window.escTip && !$.isTouch) {
+					escTip = true;
+
+					$('<div />', {'class': 'exit-message'}).
+						html('<div>Press ESC to exit</div>').
+							appendTo($('body')).
+							delay(2000).
+							animate({opacity:0}, 500, function() {
+								$(this).remove();
+							});
+				} */
+			},
+
+			zoomOut: function () {
+
+				$('.exit-message').hide();
+                                $('.cuboid').show();
+				/*$('.thumbnails').fadeIn();*/
+				$('.made').fadeIn();
+				$('.zoom-icon').removeClass('zoom-icon-out').addClass('zoom-icon-in');
+
+				setTimeout(function(){
+					$('.magazine').addClass('animated').removeClass('zoom-in');
+					resizeViewport();
+				}, 0);
+
+			}
+		}
+	});
+
+	// Zoom event
+
+	// Using arrow keys to turn the page
+
+	$(document).keydown(function(e){
+
+if((e.keyCode == 37 || e.keyCode == 38 || e.keyCode == 39) && (typeof e.target.attributes.type !== 'undefined')){
+    return false 
+}else{
+    
+		var previous = 37, next = 39, esc = 27;
+
+		switch (e.keyCode) {
+			case previous:
+
+				// left arrow
+				$('.magazine').turn('previous');
+				e.preventDefault();
+
+			break;
+			case next:
+
+				//right arrow
+				$('.magazine').turn('next');
+				e.preventDefault();
+
+			break;
+			case esc:
+				
+				$('.magazine-viewport').zoom('zoomOut');	
+				e.preventDefault();
+
+			break;
+		}
+            }
+	});
+
+	// URIs - Format #/page/1 
+
+	Hash.on('^page\/([0-9]*)$', {
+		yep: function(path, parts) {
+			var page = parts[1];
+
+			if (page!==undefined) {
+				if ($('.magazine').turn('is'))
+					$('.magazine').turn('page', page);
+			}
+
+		},
+		nop: function(path) {
+
+			if ($('.magazine').turn('is'))
+				$('.magazine').turn('page', 1);
+		}
+	});
+
+
+	$(window).resize(function() {
+		resizeViewport();
+	}).bind('orientationchange', function() {
+		resizeViewport();
+	});
+
+	// Events for thumbnails
+
+	$('.thumbnails').click(function(event) {
+		
+		var page;
+
+		if (event.target && (page=/page-([0-9]+)/.exec($(event.target).attr('class'))) ) {
+		
+			$('.magazine').turn('page', page[1]);
+		}
+	});
+
+	$('.thumbnails li').
+		bind($.mouseEvents.over, function() {
+			
+			$(this).addClass('thumb-hover');
+
+		}).bind($.mouseEvents.out, function() {
+			
+			$(this).removeClass('thumb-hover');
+
+		});
+
+	if ($.isTouch) {
+	
+		$('.thumbnails').
+			addClass('thumbanils-touch').
+			bind($.mouseEvents.move, function(event) {
+				event.preventDefault();
+			});
+
+	} else {
+
+		$('.thumbnails ul').mouseover(function() {
+
+			$('.thumbnails').addClass('thumbnails-hover');
+
+		}).mousedown(function() {
+
+			return false;
+
+		}).mouseout(function() {
+
+			$('.thumbnails').removeClass('thumbnails-hover');
+
+		});
+
+	}
+
+
+	// Regions
+
+     if ($.isTouch) {
+		$('.magazine').bind('touchstart', regionClick);
+	} else {
+		$('.magazine').click(regionClick);
+	} 
+	
+ // Zoom event
+
+	if ($.isTouch)
+		$('.magazine-viewport').bind('zoom.doubleTap', zoomTo);
+	else
+		$('.magazine-viewport').bind('zoom.tap', zoomTo);
+
+	// Events for the next button
+
+	$('.next-button').bind($.mouseEvents.over, function() {
+		
+		$(this).addClass('next-button-hover');
+
+	}).bind($.mouseEvents.out, function() {
+		
+		$(this).removeClass('next-button-hover');
+
+	}).bind($.mouseEvents.down, function() {
+		
+		$(this).addClass('next-button-down');
+
+	}).bind($.mouseEvents.up, function() {
+		
+		$(this).removeClass('next-button-down');
+
+	}).click(function() {
+		
+		$('.magazine').turn('next');
+
+	});
+
+	// Events for the next button
+	
+	$('.previous-button').bind($.mouseEvents.over, function() {
+		
+		$(this).addClass('previous-button-hover');
+
+	}).bind($.mouseEvents.out, function() {
+		
+		$(this).removeClass('previous-button-hover');
+
+	}).bind($.mouseEvents.down, function() {
+		
+		$(this).addClass('previous-button-down');
+
+	}).bind($.mouseEvents.up, function() {
+		
+		$(this).removeClass('previous-button-down');
+
+	}).click(function() {
+		
+		$('.magazine').turn('previous');
+
+	});
+
+
+	resizeViewport();
+
+	$('.magazine').addClass('animated');
+
+}
+
+// Zoom icon
+
+ $('.zoom-icon').bind('mouseover', function() { 
+ 	
+ 	if ($(this).hasClass('zoom-icon-in'))
+ 		$(this).addClass('zoom-icon-in-hover');
+
+ 	if ($(this).hasClass('zoom-icon-out'))
+ 		$(this).addClass('zoom-icon-out-hover');
+ 
+ }).bind('mouseout', function() { 
+ 	
+ 	 if ($(this).hasClass('zoom-icon-in'))
+ 		$(this).removeClass('zoom-icon-in-hover');
+ 	
+ 	if ($(this).hasClass('zoom-icon-out'))
+ 		$(this).removeClass('zoom-icon-out-hover');
+
+ }).bind('click', function() {
+
+ 	if ($(this).hasClass('zoom-icon-in'))
+ 		$('.magazine-viewport').zoom('zoomIn');
+ 	else if ($(this).hasClass('zoom-icon-out'))	
+		$('.magazine-viewport').zoom('zoomOut');
+
+ });
+
+ $('#canvas').hide();
+
+
+// Load the HTML4 version if there's not CSS transform
+
+yepnope({
+	test : Modernizr.csstransforms,
+	yep: ['lib/turn.js'],
+	nope: ['lib/turn.html4.min.js'],
+	both: ['lib/zoom.min.js', 'js/magazine.js', 'css/magazine.css', 'lib/scissor.min.js', 'css/double-page.css'],
+	complete: loadApp
+});
+</script>
+</body>
+</html>
