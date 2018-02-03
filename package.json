@@ -1,13 +1,13 @@
 {
   "name": "electron-tutorial-app",
-  "productName": "Electron tutorial app",
-  "description": "Application for electron tutorials",
+  "productName": "Electron Quiz app",
+  "description": "Application for Quiz",
   "version": "0.1.0",
   "main": "main.js",
   "license": "MIT",
   "author": "Christian Engvall",
   "devDependencies": {
-    "electron": "^1.7.8",
+    "electron": "^1.7.12",
     "electron-installer-dmg": "^0.1.2",
     "electron-packager": "^8.1.0",
     "electron-winstaller": "^2.4.1"
